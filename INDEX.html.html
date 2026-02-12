@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>OptiCorte · Optimizador de Tubería 600cm</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #1e3b5c;
+            --secondary: #25807a;
+            --accent: #f3832c;
+            --bg-dark: #1e2b4a;
+            --text-dark: #0b1e33;
+            --gray-light: #f8fafc;
+            --border-light: #e2e8f0;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background: linear-gradient(145deg, var(--bg-dark) 0%, #2a3f5e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .app-container { max-width: 600px; width: 100%; }
+        .card {
+            background: rgba(255,255,255,0.98);
+            border-radius: 32px;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.25);
+            padding: 24px 20px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .app-header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tube-badge {
+            background: #edf2f7;
+            padding: 6px 16px;
+            border-radius: 60px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--primary);
+            border: 1px solid #cbd5e0;
+        }
+        .counter-panel {
+            background: #f1f5f9;
+            border-radius: 60px;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: #1e3b5c;
+            border: 1px solid #dae2ed;
+        }
+        .counter-number {
+            background: #2a5c7a;
+            color: white;
+            padding: 5px 18px;
+            border-radius: 40px;
+            font-size: 1rem;
+        }
+        .display-box {
+            background: var(--gray-light);
+            border: 2px solid var(--border-light);
+            border-radius: 24px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .display-input {
+            width: 100%;
+            border: none;
+            font-size: 3.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            background: transparent;
+            outline: none;
+            text-align: right;
+            font-family: 'Inter', monospace;
+        }
+        .unit-hint {
+            text-align: right;
+            font-size: 0.85rem;
+            color: #5f7d95;
+            margin-top: 4px;
+        }
+        .nav-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 25px;
+            background: #eef3f8;
+            padding: 6px;
+            border-radius: 60px;
+        }
+        .nav-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 10px 6px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #3a5a73;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .nav-btn i { font-size: 1.2rem; }
+        .nav-btn.active {
+            background: white;
+            color: #1f4e6f;
+            box-shadow: 0 6px 12px rgba(0,80,120,0.12);
+            transform: scale(1.02);
+        }
+        .numpad-area {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        .numpad-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            flex: 3;
+        }
+        .numpad-btn {
+            background: white;
+            border: 1.5px solid var(--border-light);
+            border-radius: 20px;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            padding: 18px 0;
+            box-shadow: 0 5px 0 #cbd5e0;
+            cursor: pointer;
+            transition: 0.05s linear;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .numpad-btn:active {
+            transform: translateY(5px);
+            box-shadow: none;
+        }
+        .numpad-btn.delete {
+            background: #fff5f5;
+            color: #c53030;
+            border-color: #fed7d7;
+        }
+        .numpad-btn.special {
+            background: #edf2f7;
+            color: #2c5282;
+        }
+        .action-col {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+        }
+        .action-btn {
+            flex: 1;
+            border: none;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            color: white;
+            padding: 12px 0;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: 0.05s;
+        }
+        .action-btn.add { background: var(--accent); }
+        .action-btn.start { background: var(--secondary); }
+        .action-btn:active { transform: translateY(6px); box-shadow: none; }
+        .shop-block {
+            margin-top: 30px;
+            background: linear-gradient(145deg, #f0fff4, #dcfce7);
+            border-radius: 28px;
+            padding: 22px 20px;
+            border: 1px solid #b8e0c0;
+            box-shadow: 0 8px 0 #86a78e;
+        }
+        .shop-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e4a3d;
+            margin-bottom: 15px;
+        }
+        .product-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        .product-item {
+            background: white;
+            border-radius: 60px;
+            padding: 8px 20px;
+            font-weight: 600;
+            color: #174339;
+            border: 1px solid #aac7b8;
+            box-shadow: 0 2px 0 #6e9484;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .whatsapp-btn {
+            background: #25D366;
+            border: none;
+            border-radius: 60px;
+            padding: 16px 24px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            border-bottom: 5px solid #1a9e4b;
+            text-decoration: none;
+            transition: 0.1s;
+            cursor: pointer;
+        }
+        .whatsapp-btn:active { transform: translateY(5px); border-bottom-width: 2px; }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(10,30,40,0.8);
+            backdrop-filter: blur(6px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 36px;
+            padding: 28px 24px;
+            max-width: 550px;
+            width: 92%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.3);
+        }
+        .modal-content h3 {
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            color: #144a5e;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .variables-container {
+            background: #fef1e0;
+            border: 3px dashed #c2492b;
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 15px 0;
+        }
+        .variable-item {
+            background: #dc5f4c;
+            color: white;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .variable-item button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 28px; height: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .history-list { max-height: 380px; overflow-y: auto; }
+        .history-item {
+            background: white;
+            border: 2px solid #e2eef5;
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+        .history-title-input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 16px;
+            border: 1px solid #cbd6e3;
+            font-size: 1rem;
+            margin: 8px 0;
+        }
+        .round {
+            background: #f4fbf9;
+            border-left: 8px solid #3a8a7c;
+            padding: 18px;
+            border-radius: 18px;
+            margin-bottom: 20px;
+        }
+        .combination {
+            background: #cfeae5;
+            padding: 14px;
+            border-radius: 18px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+        .toast {
+            visibility: hidden;
+            background: #1f3e4b;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 60px;
+            position: fixed;
+            bottom: 30px; left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            z-index: 1200;
+        }
+        .toast.show { visibility: visible; animation: fadein 0.3s, fadeout 0.3s 2.7s; }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+        .loader {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 2000;
+        }
+        .spinner {
+            width: 55px; height: 55px;
+            border: 6px solid #ddd;
+            border-top-color: #2a7f6e;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="card">
+            <!-- HEADER -->
+            <div class="app-header">
+                <h1><i class="fas fa-tools"></i> OptiCorte</h1>
+                <span class="tube-badge"><i class="fas fa-ruler"></i> 600 cm</span>
+            </div>
+            
+            <!-- CONTADOR -->
+            <div class="counter-panel">
+                <span><i class="fas fa-cut"></i> Cortes cargados</span>
+                <span class="counter-number" id="counterDisplay">0 / 20</span>
+            </div>
+            
+            <!-- DISPLAY -->
+            <div class="display-box">
+                <input type="text" id="newVariable" class="display-input" placeholder="0" readonly inputmode="decimal">
+                <div class="unit-hint"><i class="fas fa-arrows-alt-h"></i> centímetros (cm)</div>
+            </div>
+            
+            <!-- NAVEGACIÓN -->
+            <div class="nav-row" id="navBar">
+                <button class="nav-btn active" onclick="showRangeSettings()"><i class="fas fa-sliders-h"></i><span>Rangos</span></button>
+                <button class="nav-btn" onclick="showVariables()"><i class="fas fa-list"></i><span>Cortes</span></button>
+                <button class="nav-btn" onclick="showHistory()"><i class="fas fa-history"></i><span>Historial</span></button>
+                <button class="nav-btn" onclick="showResults()"><i class="fas fa-chart-bar"></i><span>Resultados</span></button>
+            </div>
+            
+            <!-- TECLADO + ACCIONES -->
+            <div class="numpad-area">
+                <div class="numpad-grid">
+                    <button class="numpad-btn" onclick="addDigit('7')">7</button>
+                    <button class="numpad-btn" onclick="addDigit('8')">8</button>
+                    <button class="numpad-btn" onclick="addDigit('9')">9</button>
+                    <button class="numpad-btn" onclick="addDigit('4')">4</button>
+                    <button class="numpad-btn" onclick="addDigit('5')">5</button>
+                    <button class="numpad-btn" onclick="addDigit('6')">6</button>
+                    <button class="numpad-btn" onclick="addDigit('1')">1</button>
+                    <button class="numpad-btn" onclick="addDigit('2')">2</button>
+                    <button class="numpad-btn" onclick="addDigit('3')">3</button>
+                    <button class="numpad-btn delete" onclick="deleteDigit()"><i class="fas fa-backspace"></i></button>
+                    <button class="numpad-btn" onclick="addDigit('0')">0</button>
+                    <button class="numpad-btn special" onclick="addDigit('.')">.</button>
+                </div>
+                <div class="action-col">
+                    <button class="action-btn add" onclick="addVariable()"><i class="fas fa-plus"></i>Añadir</button>
+                    <button class="action-btn start" onclick="startAutomaticProcessing()"><i class="fas fa-play"></i>Calcular</button>
+                </div>
+            </div>
+            
+            <!-- BLOQUE DE VENTAS -->
+            <div class="shop-block">
+                <div class="shop-title">
+                    <i class="fas fa-shield-hammer" style="color: #1e6f5c;"></i> 
+                    ¿Cortaste? Lleva también:
+                </div>
+                <div class="product-list">
+                    <span class="product-item"><i class="fas fa-lock"></i> Cerrojos</span>
+                    <span class="product-item"><i class="fas fa-key"></i> Chapas reforzadas</span>
+                    <span class="product-item"><i class="fas fa-hammer"></i> Martillos escoriadores</span>
+                </div>
+                <!-- ===== CAMBIA SOLO EL NÚMERO ===== -->
+                <a id="whatsappButton" href="https://wa.me/5491123456789?text=Hola%21%20Vi%20la%20calculadora%20OptiCorte%20y%20quiero%20consultar%20precios%20de%20herrajes%2C%20chapas%20o%20martillos." target="_blank" class="whatsapp-btn">
+                    <i class="fab fa-whatsapp"></i> Consultar por WhatsApp
+                </a>
+                <p style="font-size: 0.8rem; color: #346b5e; margin-top: 12px; text-align: center;">
+                    🔨 Fabricación propia · Entrega rápida · Presupuesto sin cargo
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODALES -->
+    <div class="modal" id="rangeModal" onclick="closeModalOnClick(event, 'rangeModal')">
+        <div class="modal-content">
+            <h3><i class="fas fa-sliders-h"></i> Rango óptimo (cm)</h3>
+            <p style="color: #3f5a6b; margin-bottom: 20px;">Tubo de 600 cm. Ajusta según desperdicio admitido.</p>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <label style="flex:1;"><i class="fas fa-arrow-down"></i> Mínimo:
+                    <input type="number" id="modalSumMin" step="0.1" min="0" max="600" value="580.0" style="width:100%; padding: 12px; border-radius: 20px; border:2px solid #b8d4e3; font-size:1.2rem;"></label>
+                <label style="flex:1;"><i class="fas fa-arrow-up"></i> Máximo:
+                    <input type="number" id="modalSumMax" step="0.1" min="0" max="600" value="600.0" style="width:100%; padding: 12px; border-radius: 20px; border:2px solid #b8d4e3; font-size:1.2rem;"></label>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 16px; margin-top: 30px;">
+                <button onclick="saveRangeSettings()" style="background:#2a7f6e; color:white; border:none; padding:14px 28px; border-radius:60px; font-weight:700;">Guardar</button>
+                <button onclick="closeRangeModal()" style="background:#b0c6ce; color:white; border:none; padding:14px 28px; border-radius:60px;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="variablesModal" onclick="closeModalOnClick(event, 'variablesModal')">
+        <div class="modal-content">
+            <h3><i class="fas fa-list"></i> Cortes cargados</h3>
+            <div style="background:#eef4f9; border-radius: 40px; padding: 6px 18px; display:inline-block; margin-bottom:16px;">
+                <span id="modalCounterDisplay">0/20</span> cortes
+            </div>
+            <div class="variables-container" id="modalVariablesList"></div>
+            <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                <button onclick="confirmClearVariables()" style="background:#c1554a; color:white; border:none; padding:12px 24px; border-radius:60px;"><i class="fas fa-trash-alt"></i> Limpiar todo</button>
+                <button onclick="closeVariablesModal()" style="background:#7e9aa8; color:white; border:none; padding:12px 24px; border-radius:60px;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="historyModal" onclick="closeModalOnClick(event, 'historyModal')">
+        <div class="modal-content">
+            <h3><i class="fas fa-history"></i> Historial</h3>
+            <div class="history-list" id="historyList"></div>
+            <div style="margin-top: 20px; text-align: right;">
+                <button onclick="closeHistoryModal()" style="background:#7e9aa8; color:white; border:none; padding:12px 28px; border-radius:60px;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="resultsModal" onclick="closeModalOnClick(event, 'resultsModal')">
+        <div class="modal-content">
+            <h3><i class="fas fa-chart-bar"></i> Resultados</h3>
+            <div id="modalResults"></div>
+            <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
+                <button onclick="closeResultsModal()" style="background:#7e9aa8; color:white; border:none; padding:12px 28px; border-radius:60px;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="clearVariablesModal" onclick="closeModalOnClick(event, 'clearVariablesModal')">
+        <div class="modal-content">
+            <h3><i class="fas fa-exclamation-triangle"></i> ¿Eliminar todos?</h3>
+            <p style="margin:20px 0; font-size:1.1rem;">Se borrarán todos los cortes cargados.</p>
+            <div style="display: flex; gap: 18px; justify-content: flex-end;">
+                <button onclick="clearVariables()" style="background:#c0392b; color:white; border:none; padding:12px 28px; border-radius:60px;">Sí, limpiar</button>
+                <button onclick="closeClearVariablesModal()" style="background:#95a5a6; color:white; border:none; padding:12px 28px; border-radius:60px;">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="deleteHistoryModal" onclick="closeModalOnClick(event, 'deleteHistoryModal')">
+        <div class="modal-content">
+            <h3><i class="fas fa-trash"></i> Eliminar del historial</h3>
+            <p style="margin:20px 0;">¿Eliminar este cálculo permanentemente?</p>
+            <div style="display: flex; gap: 18px; justify-content: flex-end;">
+                <button onclick="confirmDeleteHistory()" style="background:#c0392b; color:white; border:none; padding:12px 28px; border-radius:60px;">Eliminar</button>
+                <button onclick="closeDeleteHistoryModal()" style="background:#95a5a6; color:white; border:none; padding:12px 28px; border-radius:60px;">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast"><i class="fas fa-info-circle"></i><span id="toastMessage"></span></div>
+    <div class="loader" id="loader"><div class="spinner"></div><div class="loader-text" id="loaderText">Procesando combinaciones...</div></div>
+    
+    <script>
+        // ========== CONFIGURACIÓN ==========
+        const CONFIG = {
+            MAX_VARIABLES: 20,
+            TUBE_LENGTH: 600.0,
+            WHATSAPP_NUMBER: '5491123456789' // <--- CAMBIA ESTE NÚMERO
+        };
+
+        // ========== VARIABLES GLOBALES ==========
+        let variables = [];
+        let worker = null;
+        let calculationHistory = [];
+        let historyToDelete = null;
+        let currentResults = null;
+
+        // ========== INICIALIZACIÓN ==========
+        window.onload = function() {
+            document.getElementById('modalSumMin').value = '580.0';
+            document.getElementById('modalSumMax').value = '600.0';
+            updateCounterDisplay();
+            setupWorker();
+            loadHistory();
+            setActiveNavButton(0);
+            setupWhatsAppLink();
+        };
+
+        // ========== UTILIDADES ==========
+        function formatNumber(n) {
+            return n.toFixed(1);
+        }
+
+        function showToast(msg, type = 'info') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').innerText = msg;
+            toast.className = 'toast show';
+            setTimeout(() => toast.className = 'toast', 3000);
+        }
+
+        function showLoader(text) {
+            document.getElementById('loader').style.display = 'flex';
+            document.getElementById('loaderText').innerText = text || 'Procesando...';
+        }
+
+        function hideLoader() {
+            document.getElementById('loader').style.display = 'none';
+        }
+
+        // ========== DISPLAY Y TECLADO ==========
+        function addDigit(d) {
+            const input = document.getElementById('newVariable');
+            let val = input.value;
+            if (d === '.') {
+                if (val === '') input.value = '0.';
+                else if (!val.includes('.')) input.value = val + '.';
+            } else {
+                if (val === '0' || val === '') input.value = d;
+                else input.value = val + d;
+            }
+        }
+
+        function deleteDigit() {
+            const input = document.getElementById('newVariable');
+            input.value = input.value.slice(0, -1);
+            if (input.value === '') input.value = '';
+        }
+
+        function clearInput() {
+            document.getElementById('newVariable').value = '';
+        }
+
+        // ========== CONTADOR ==========
+        function updateCounterDisplay() {
+            const main = document.getElementById('counterDisplay');
+            const modal = document.getElementById('modalCounterDisplay');
+            main.innerText = variables.length + ' / ' + CONFIG.MAX_VARIABLES;
+            if (modal) modal.innerText = variables.length + ' / ' + CONFIG.MAX_VARIABLES;
+        }
+
+        // ========== GESTIÓN DE CORTES ==========
+        function addVariable() {
+            const input = document.getElementById('newVariable');
+            let val = input.value.trim();
+            if (val === '') { showToast('Ingresa un valor', 'error'); return; }
+            if (val.endsWith('.')) val += '0';
+            val = val.replace(',', '.');
+            const num = parseFloat(val);
+            if (isNaN(num) || num <= 0) { showToast('Número inválido', 'error'); return; }
+            if (num > CONFIG.TUBE_LENGTH) { showToast('Máximo ' + CONFIG.TUBE_LENGTH + ' cm', 'error'); return; }
+            if (variables.length >= CONFIG.MAX_VARIABLES) { showToast('Máximo ' + CONFIG.MAX_VARIABLES + ' cortes', 'warning'); clearInput(); return; }
+            variables.push(num);
+            clearInput();
+            updateCounterDisplay();
+            showToast('Corte ' + formatNumber(num) + ' cm añadido', 'success');
+        }
+
+        function removeVariable(index) {
+            let removed = variables[index];
+            variables.splice(index, 1);
+            updateCounterDisplay();
+            updateVariablesList();
+            showToast('Corte ' + formatNumber(removed) + ' eliminado', 'success');
+        }
+
+        function confirmClearVariables() {
+            if (variables.length === 0) { showToast('No hay cortes', 'warning'); return; }
+            document.getElementById('clearVariablesModal').style.display = 'flex';
+        }
+
+        function clearVariables() {
+            variables = [];
+            updateCounterDisplay();
+            updateVariablesList();
+            closeClearVariablesModal();
+            closeVariablesModal();
+            showToast('Todos los cortes eliminados', 'success');
+        }
+
+        function updateVariablesList() {
+            const container = document.getElementById('modalVariablesList');
+            container.innerHTML = '';
+            variables.forEach((v, i) => {
+                let el = document.createElement('div');
+                el.className = 'variable-item';
+                el.innerHTML = `${formatNumber(v)} cm <button onclick="removeVariable(${i})"><i class="fas fa-times"></i></button>`;
+                container.appendChild(el);
+            });
+        }
+
+        // ========== RANGOS ==========
+        function saveRangeSettings() {
+            let min = parseFloat(document.getElementById('modalSumMin').value);
+            let max = parseFloat(document.getElementById('modalSumMax').value);
+            if (isNaN(min) || isNaN(max) || min >= max || min < 0 || max > CONFIG.TUBE_LENGTH) {
+                showToast('Rangos entre 0 y ' + CONFIG.TUBE_LENGTH + ' cm', 'error');
+                return;
+            }
+            closeRangeModal();
+            showToast('Rangos guardados', 'success');
+        }
+
+        // ========== WEB WORKER (ALGORITMO) ==========
+        function setupWorker() {
+            if (worker) worker.terminate();
+            const blob = new Blob([`
+                // Worker de optimización
+                function bestCombination(vars, minSum, maxSum) {
+                    let best = { elements: [], sum: 0, metric: -1 };
+                    function combine(start, current, sum) {
+                        if (current.length > 0 && sum >= minSum && sum <= maxSum) {
+                            let metric = sum / 600 * 0.5 + (1 / (1 + (vars.length - current.length))) * 0.3 + ((vars.length - current.length) / 100) * 0.2;
+                            if (metric > best.metric) {
+                                best = { elements: [...current], sum: sum, metric: metric };
+                            }
+                        }
+                        for (let i = start; i < vars.length; i++) {
+                            if (sum + vars[i] > maxSum) continue;
+                            current.push(vars[i]);
+                            combine(i + 1, current, sum + vars[i]);
+                            current.pop();
+                        }
+                    }
+                    combine(0, [], 0);
+                    return best;
+                }
+                onmessage = function(e) {
+                    let { variables, sumMin, sumMax } = e.data;
+                    let current = [...variables];
+                    let rounds = [];
+                    let roundNum = 1;
+                    while (current.length > 0 && roundNum < 50) {
+                        let best = bestCombination(current, sumMin, sumMax);
+                        if (best.elements.length === 0) break;
+                        let remaining = current.filter(v => !best.elements.includes(v));
+                        rounds.push({
+                            round: roundNum,
+                            combination: best.elements,
+                            sum: best.sum,
+                            remaining: [...remaining]
+                        });
+                        current = remaining;
+                        roundNum++;
+                    }
+                    postMessage({ status: 'complete', results: rounds, finalRemaining: current });
+                };
+            `], { type: 'application/javascript' });
+            worker = new Worker(URL.createObjectURL(blob));
+            worker.onmessage = function(e) {
+                hideLoader();
+                let { results, finalRemaining } = e.data;
+                currentResults = { results, finalRemaining };
+                addToHistory(results, finalRemaining);
+                showToast('Cálculo completado', 'success');
+            };
+            worker.onerror = function(e) {
+                hideLoader();
+                showToast('Error en el cálculo', 'error');
+                console.error(e);
+            };
+        }
+
+        function startAutomaticProcessing() {
+            if (variables.length === 0) { showToast('Carga al menos un corte', 'error'); return; }
+            let min = parseFloat(document.getElementById('modalSumMin').value);
+            let max = parseFloat(document.getElementById('modalSumMax').value);
+            if (isNaN(min) || isNaN(max) || min >= max) { showToast('Rangos inválidos', 'error'); return; }
+            variables.sort((a, b) => b - a);
+            showLoader('Buscando combinaciones óptimas...');
+            worker.postMessage({ variables: [...variables], sumMin: min, sumMax: max });
+        }
+
+        // ========== HISTORIAL ==========
+        function loadHistory() {
+            let saved = localStorage.getItem('optiCorteHistory');
+            if (saved) calculationHistory = JSON.parse(saved);
+        }
+
+        function saveHistory() {
+            localStorage.setItem('optiCorteHistory', JSON.stringify(calculationHistory));
+        }
+
+        function addToHistory(results, finalRemaining) {
+            let min = document.getElementById('modalSumMin').value;
+            let max = document.getElementById('modalSumMax').value;
+            let entry = {
+                timestamp: new Date().toISOString(),
+                variables: [...variables],
+                sumMin: min,
+                sumMax: max,
+                results: results,
+                finalRemaining: finalRemaining,
+                customTitle: ''
+            };
+            calculationHistory.push(entry);
+            if (calculationHistory.length > 20) calculationHistory.shift();
+            saveHistory();
+        }
+
+        function updateHistoryDisplay() {
+            let list = document.getElementById('historyList');
+            list.innerHTML = '';
+            if (calculationHistory.length === 0) {
+                list.innerHTML = '<p style="text-align:center; padding:20px;">Aún no hay cálculos</p>';
+                return;
+            }
+            for (let i = 0; i < calculationHistory.length; i++) {
+                let calc = calculationHistory[i];
+                let item = document.createElement('div');
+                item.className = 'history-item';
+                item.innerHTML = `
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="font-weight:800;">#${i+1}</span>
+                        <button onclick="deleteHistoryItem(${i}, event)" style="background:none; border:none; color:#c0392b; font-size:1.2rem;"><i class="fas fa-trash"></i></button>
+                    </div>
+                    <input class="history-title-input" value="${calc.customTitle || ''}" placeholder="Título (opcional)" onchange="updateHistoryTitle(${i}, this.value)">
+                    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:10px;">
+                        <span style="background:#e1ecf2; padding:6px 14px; border-radius:60px;"><i class="fas fa-cut"></i> ${calc.variables.length} cortes</span>
+                        <span style="background:#e1ecf2; padding:6px 14px; border-radius:60px;"><i class="fas fa-scissors"></i> ${calc.results.length} rondas</span>
+                        <span style="background:#e1ecf2; padding:6px 14px; border-radius:60px;"><i class="fas fa-calendar"></i> ${new Date(calc.timestamp).toLocaleDateString()}</span>
+                    </div>
+                    <button onclick="loadCalculation(${i})" style="background:#3a7ca5; color:white; border:none; padding:10px 20px; border-radius:60px; margin-top:12px; width:100%;"><i class="fas fa-download"></i> Cargar este cálculo</button>
+                `;
+                list.appendChild(item);
+            }
+        }
+
+        function updateHistoryTitle(index, newTitle) {
+            if (calculationHistory[index]) {
+                calculationHistory[index].customTitle = newTitle;
+                saveHistory();
+                showToast('Título actualizado', 'success');
+            }
+        }
+
+        function deleteHistoryItem(index, ev) {
+            ev.stopPropagation();
+            historyToDelete = index;
+            document.getElementById('deleteHistoryModal').style.display = 'flex';
+        }
+
+        function confirmDeleteHistory() {
+            if (historyToDelete !== null) {
+                calculationHistory.splice(historyToDelete, 1);
+                saveHistory();
+                updateHistoryDisplay();
+                closeDeleteHistoryModal();
+                showToast('Eliminado', 'success');
+            }
+        }
+
+        function loadCalculation(index) {
+            let calc = calculationHistory[index];
+            if (!calc) return;
+            variables = [...calc.variables];
+            updateCounterDisplay();
+            document.getElementById('modalSumMin').value = calc.sumMin;
+            document.getElementById('modalSumMax').value = calc.sumMax;
+            currentResults = { results: calc.results, finalRemaining: calc.finalRemaining };
+            closeHistoryModal();
+            showToast('Cálculo cargado', 'success');
+        }
+
+        // ========== RESULTADOS ==========
+        function displayResultsInModal(rounds, finalRemaining) {
+            let container = document.getElementById('modalResults');
+            container.innerHTML = '';
+            if (!rounds || rounds.length === 0) {
+                container.innerHTML = '<p style="text-align:center; padding:30px;">No se encontraron combinaciones.</p>';
+                return;
+            }
+            rounds.forEach(r => {
+                let div = document.createElement('div');
+                div.className = 'round';
+                div.innerHTML = `
+                    <h4 style="display:flex; gap:10px;"><i class="fas fa-cut"></i> Ronda ${r.round}</h4>
+                    <div class="combination">
+                        <strong>Corte:</strong> ${r.combination.map(v => formatNumber(v)).join(' + ')} 
+                        = <strong style="background:#2a7f6e; color:white; padding:6px 14px; border-radius:60px;">${formatNumber(r.sum)} cm</strong>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            let finalDiv = document.createElement('div');
+            finalDiv.className = 'round';
+            if (finalRemaining.length === 0) {
+                finalDiv.innerHTML = '<h4><i class="fas fa-check-circle"></i> ¡Todo utilizado!</h4>';
+            } else {
+                finalDiv.innerHTML = `
+                    <h4><i class="fas fa-exclamation-triangle"></i> Sobrantes (${finalRemaining.length})</h4>
+                    <div style="background:#ffd8b5; padding:14px; border-radius:16px;">${finalRemaining.map(v => formatNumber(v)).join(' , ')} cm</div>
+                `;
+            }
+            container.appendChild(finalDiv);
+        }
+
+        // ========== NAVEGACIÓN Y MODALES ==========
+        function setActiveNavButton(index) {
+            let btns = document.querySelectorAll('.nav-btn');
+            btns.forEach((btn, i) => btn.classList.toggle('active', i === index));
+        }
+
+        function showRangeSettings() { document.getElementById('rangeModal').style.display = 'flex'; setActiveNavButton(0); }
+        function closeRangeModal() { document.getElementById('rangeModal').style.display = 'none'; }
+        function showVariables() { updateVariablesList(); document.getElementById('variablesModal').style.display = 'flex'; setActiveNavButton(1); }
+        function closeVariablesModal() { document.getElementById('variablesModal').style.display = 'none'; }
+        function showHistory() { updateHistoryDisplay(); document.getElementById('historyModal').style.display = 'flex'; setActiveNavButton(2); }
+        function closeHistoryModal() { document.getElementById('historyModal').style.display = 'none'; }
+        function showResults() {
+            if (currentResults) {
+                displayResultsInModal(currentResults.results, currentResults.finalRemaining);
+                document.getElementById('resultsModal').style.display = 'flex';
+                setActiveNavButton(3);
+            } else {
+                showToast('Primero ejecuta un cálculo', 'warning');
+            }
+        }
+        function closeResultsModal() { document.getElementById('resultsModal').style.display = 'none'; }
+
+        function closeModalOnClick(event, modalId) {
+            if (event.target.id === modalId) document.getElementById(modalId).style.display = 'none';
+        }
+
+        function closeClearVariablesModal() { document.getElementById('clearVariablesModal').style.display = 'none'; }
+        function closeDeleteHistoryModal() { document.getElementById('deleteHistoryModal').style.display = 'none'; historyToDelete = null; }
+
+        // ========== WHATSAPP ==========
+        function setupWhatsAppLink() {
+            let link = document.getElementById('whatsappButton');
+            let message = encodeURIComponent('Hola! Vi la calculadora OptiCorte y quiero consultar precios de herrajes, chapas o martillos.');
+            link.href = `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${message}`;
+        }
+    </script>
+</body>
+</html>
